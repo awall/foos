@@ -1,0 +1,137 @@
+body {
+  background-color: lightgray;
+  font-family: arial, sans-serif;
+  font-size: 14px;
+  margin: 0px;
+  margin-bottom: 50px;
+}
+
+a {
+  text-decoration: none;
+}
+
+form input[type=button] {
+  width: 100%;
+  height: 3em;
+  font-weight: bold;
+  border: 1px solid black;
+}
+
+form input[type=button]:focus {
+  outline: none;
+}
+
+/* modal */
+.modal-fog {
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  height: 100%;
+  width: 100%;
+  background-color: black;
+  opacity: 0.4;
+}
+
+.modal-content {
+  position: fixed;
+  width: min-content;
+  top: 135px;
+  left: 50%;
+  transform: translate(-50%, 0%);
+  padding: 10px;
+  background-color: white;
+  border: 1px solid black;
+  box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+}
+
+/* toolbar */
+#toolbar {
+  position: fixed;
+  top: 0px;
+  height: 85px;
+  width: 100%;
+
+  background-color: black;
+}
+
+#toolbar + div {
+  margin-top: 135px;
+}
+
+#bigbar::before {
+  content: "";
+  float: left;
+  height: 120px;
+  width: 155px;
+  background-image: url(foos.png);
+}
+
+#bigbar {
+  color: white;
+}
+
+#smallbar {
+  position: absolute;
+  bottom: 0px;
+  right: 0px;
+
+  background-color: inherit;
+  color: white;
+}
+
+/* main content */
+#main {
+  max-width: 960px;
+  margin: auto;
+
+  background-color: white;
+  height: 2000px;
+}
+
+/* popup menus */
+#avatar::before {
+  content: "";
+  float: left;
+  height: 32px;
+  width: 42px;
+  background-image: url(avatar.png);
+  background-repeat: no-repeat;
+}
+
+.menu {
+  display: inline-block;
+}
+
+.menu, .menu * {
+  background-color: inherit;
+  color: inherit;
+}
+
+.menu * {
+  line-height: 32px;
+  vertical-align: center;
+}
+
+.menu-top, .menu-action, .menu-info {
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.menu-top:hover, .menu-action:hover {
+  background-color: green;
+  color: white;
+}
+
+.menu-popup {
+  visibility: hidden;
+  display: none;
+
+  position: absolute;
+  width: max-content;
+  right: 0px;
+}
+
+.menu:hover >.menu-popup {
+  visibility: visible;
+  display: block;
+}

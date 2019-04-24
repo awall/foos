@@ -1,0 +1,8 @@
+[package]
+name = "foos"
+version = "0.1.0"
+authors = ["awall"]
+
+[dependencies]
+rocket = "0.4"
+rocket_contrib = "0.4"
