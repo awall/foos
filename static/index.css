@@ -145,3 +145,88 @@ form input[type=submit]:focus {
   visibility: visible;
   display: block;
 }
+
+/* pankaj */
+.PlaySlot {
+	-webkit-box-shadow:0px 0px 5px 1px #ff0000 ;
+	-moz-box-shadow:0px 0px 5px 1px #ff0000 ;
+	box-shadow:0px 0px 5px 1px #ff0000 ;
+	background-color: #555555;
+	border: none;
+	color: white;
+	padding: 15px 32px;
+	text-align: center;
+	text-decoration: none;
+	display: inline-block;
+	font-size: 16px;
+	margin: 4px 2px;
+	cursor: pointer;
+}
+
+table td#slot1 {background-color:yellow;}
+table td#slot2 {background-color:yellow;}
+table td#slot3 {background-color:yellow;}
+table td#slot4 {background-color:yellow;}
+table td#slot5 {background-color:yellow;}
+table td#slot6 {background-color:yellow;}
+table td#slot7 {background-color:yellow;}
+table td#slot8 {background-color:yellow;}
+table td#slot9 {background-color:green;}
+table td#slot14 {background-color:green;}
+table td#slot10 {background-color:green;}
+table td#slot15 {background-color:green;}
+table td#slot11 {background-color:blue;}
+table td#slot13 {background-color:blue;}
+table td#slot12 {background-color:red;}
+
+#ApproveButtonTeam {
+  background-color: #4CAF50; /* Green */
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+}
+
+#ApproveButtonScore{
+  background-color: #4CAF50; /* Green */
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+}
+
+#submitButtonTeam {
+  background-color: #008CBA; /* Blue */
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+}
+
+#submitButtonScore {
+  background-color: #008CBA; /* Blue */
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+}

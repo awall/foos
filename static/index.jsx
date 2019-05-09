@@ -127,6 +127,10 @@ const Toolbar = () => (
             BIG BAR CONTENT HERE
         </div>
         <div id="smallbar">
+            <ApproveScore />
+			<ApproveTeam />
+		    <SubmitScore />
+			<SubmitTeam />
             <OtherMenu />
             <UserMenu />
         </div>
@@ -137,10 +141,77 @@ const Main = () => (
     <div>
         <Toolbar />
         <div id="main">
-            "Hello, world!
+            <Overview />
         </div>
     </div>
 )
+
+//
+// START pankaj
+//
+const SubmitTeamForm = () => modal(
+    <form>
+        Team Name
+        <br />
+        <input type="text" name="teamname" />
+        <br />
+        <br />
+        Member Name1
+        <br />
+        <input type="text" name="membername1" />
+        <br />
+        <br />
+		Member Name2
+        <br />
+        <input type="text" name="membername2" />
+        <br />
+        <br />
+        <input type="button" value="Submit"/>
+    </form>
+)
+
+const SubmitScoreForm = () => modal(
+    <form>
+        Your Score
+        <br />
+        <input type="number" name="yourscore" />
+        <br />
+        <br />
+        Opponent Score
+        <br />
+        <input type="number" name="opponentscore" />
+        <br />
+        <br />
+        <input type="button" value="Submit"/>
+    </form>
+)
+
+const ApproveScore = () => (
+    <div className="button" id = "ApproveButtonScore">
+        <div className="button">Approve Score</div>
+    </div>
+)
+
+const ApproveTeam = () => (
+    <div className="button" id = "ApproveButtonTeam">
+        <div className="button">Approve Team</div>
+    </div>
+)
+
+const SubmitScore = () => (
+    <div className="button" id = "submitButtonScore">
+        <div className="button">Submit Score</div>
+    </div>
+)
+
+const SubmitTeam = () => (
+    <div className="button" id = "submitButtonTeam">
+        <div className="button">Submit Team</div>
+    </div>
+)
+//
+// END pankaj
+//
 
 class App extends React.Component {
     constructor(props) {
