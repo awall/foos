@@ -15,15 +15,6 @@ use jsonwebtoken as jwt;
 
 const SECRET: &str = "oogly_woogly_bugle_boy_from_company_B!";
 
-fn to_jwt(claims: &Claims) -> String {
-    jwt::encode(&jwt::Header::default(), claims, SECRET.as_ref()).unwrap()
-}
-
-#[get("/hello")]
-fn hello() -> &'static str {
-    "Hello, world!"
-}
-
 #[derive(Deserialize, Debug)]
 struct Login {
     username: String,
@@ -34,6 +25,15 @@ struct Login {
 struct Claims {
     username: String,
     admin: bool,
+}
+
+#[get("/hello")]
+fn hello() -> &'static str {
+    "Hello, world!"
+}
+
+fn to_jwt(claims: &Claims) -> String {
+    jwt::encode(&jwt::Header::default(), claims, SECRET.as_ref()).unwrap()
 }
 
 #[post("/login", data="<credentials>")]

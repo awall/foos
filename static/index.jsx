@@ -1,4 +1,8 @@
+const UserContext = React.createContext({})
+
 class Login extends React.Component {
+    static contextType = UserContext
+
     constructor(props) {
         super(props)
         this.state = {
@@ -12,23 +16,20 @@ class Login extends React.Component {
     login(event) {
         // we need this to stop the default behaviour, which is posting to "/" using the username and password as query parameters
         event.preventDefault()
-
-        let auth = this.props.auth
-
         axios
             .post('/api/login', {
                 username: this.refs.username.value,
                 password: this.refs.password.value,
             })
             .then(response => {
-                auth.setToken(response.data)
+                this.context.setToken(response.data)
                 this.setState({
                     failed: false,
                     redirect: true,
                 })
             })
             .catch(response => {
-                auth.clearToken()
+                this.context.clearToken()
                 this.setState({
                     failed: true,
                     redirect: false,
@@ -66,19 +67,19 @@ class Login extends React.Component {
 }
 
 class UserMenu extends React.Component {
+    static contextType = UserContext
+
     constructor(props) {
         super(props)
-
         this.logout = this.logout.bind(this)
     }
 
     logout() {
-        this.props.auth.clearToken()
+        this.context.clearToken()
     }
 
     render() {
-        let auth = this.props.auth
-        let user = auth.username
+        let user = this.context.username
 
         return (
             <div className="menu">
@@ -107,14 +108,14 @@ const OtherMenu = () => (
     </div>
 )
 
-const Toolbar = ({auth}) => (
+const Toolbar = () => (
     <div id="toolbar">
         <div id="bigbar">
             BIG BAR CONTENT HERE
         </div>
         <div id="smallbar">
             <OtherMenu />
-            <UserMenu auth={auth} />
+            <UserMenu />
         </div>
     </div>
 )
@@ -138,7 +139,7 @@ class Main extends React.Component {
     render() {
         return (
             <div>
-                <Toolbar auth={this.props.auth} />
+                <Toolbar />
                 <div id="main">
                     { this.state.value }
                 </div>
@@ -151,7 +152,7 @@ class App extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
-            username: null,
+            token: null,
         }
 
         this.setToken = this.setToken.bind(this)
@@ -160,45 +161,40 @@ class App extends React.Component {
 
     setToken(data) {
         sessionStorage.setItem("foosToken", data)
-        this.reloadToken()
+        this.setState({token: data})
     }
 
     clearToken() {
         sessionStorage.removeItem("foosToken")
-        this.reloadToken()
+        this.setState({token: null})
     }
 
-    reloadToken() {
-        let raw = sessionStorage.getItem("foosToken")
+    componentDidMount() {
+        let data = sessionStorage.getItem("foosToken")
+        this.setState({token: data})
+    }
+
+    render() {
+        let raw = this.state.token
         let parts = raw ? raw.split('.') : null
         let header = parts ? JSON.parse(window.atob(parts[0])) : null
         let payload = parts ? JSON.parse(window.atob(parts[1])) : null
         let username = payload ? payload.username : null
         let admin = payload ? payload.admin : false
 
-        this.setState({
-            username: username,
-            admin: admin,
-        })
-    }
-
-    componentDidMount() {
-        this.reloadToken()
-    }
-
-    render() {
-        let auth = {
-            username: this.state.username,
-            admin: this.state.admin,
-            clearToken: this.clearToken,
-            setToken: this.setToken,
-        }
-
         return (
-            <HashRouter>
-                <Route path="/" render={ props => <Main {...props} auth={auth} />} />
-                <Route path="/login" exact  render={ props => <Login {...props} auth={auth} />} />
-            </HashRouter>
+            <UserContext.Provider value={{
+                username: username,
+                admin: admin,
+                token: raw,
+                setToken: this.setToken,
+                clearToken: this.clearToken,
+            }}>
+                <HashRouter>
+                    <Route path="/" component={Main} />
+                    <Route path="/login" exact component={Login} />
+                </HashRouter>
+            </UserContext.Provider>
         )
     }
 }
