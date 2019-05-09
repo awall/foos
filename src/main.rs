@@ -27,11 +27,6 @@ struct Claims {
     admin: bool,
 }
 
-#[get("/hello")]
-fn hello() -> &'static str {
-    "Hello, world!"
-}
-
 fn to_jwt(claims: &Claims) -> String {
     jwt::encode(&jwt::Header::default(), claims, SECRET.as_ref()).unwrap()
 }

@@ -120,33 +120,14 @@ const Toolbar = () => (
     </div>
 )
 
-class Main extends React.Component {
-    constructor(props) {
-        super(props)
-        this.state = {
-            value: 'WAITING...'
-        }
-    }
-
-    componentDidMount() {
-        axios.get('/api/hello').then(response =>
-            this.setState({
-                value: response.data
-            })
-        )
-    }
-
-    render() {
-        return (
-            <div>
-                <Toolbar />
-                <div id="main">
-                    { this.state.value }
-                </div>
-            </div>
-        )
-    }
-}
+const Main = () => (
+    <div>
+        <Toolbar />
+        <div id="main">
+            "Hello, world!
+        </div>
+    </div>
+)
 
 class App extends React.Component {
     constructor(props) {
