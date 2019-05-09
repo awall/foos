@@ -20,41 +20,29 @@ class Login extends React.Component {
 
     constructor(props) {
         super(props)
-        this.state = {
-            redirect: false,
-            failed: false,
-        }
+        this.state = { failed: false }
     }
 
     login = event => {
         // we need this to stop the default behaviour, which is posting to "/" using the username and password as query parameters
         event.preventDefault()
-        axios
+        this.context
             .post('/api/login', {
                 username: this.refs.username.value,
                 password: this.refs.password.value,
-            })
-            .then(response => {
+            }, response => {
                 this.context.setToken(response.data)
-                this.setState({
-                    failed: false,
-                    redirect: true,
-                })
-            })
-            .catch(response => {
-                this.context.clearToken()
-                this.setState({
-                    failed: true,
-                    redirect: false,
-                })
+                this.props.history.push('/')
+            }, (error, logError) => {
+                if (error.response.status == 401) {
+                    this.setState({ failed: true })
+                } else {
+                    logError(error.response.status + " " + error.response.statusText)
+                }
             })
     }
 
     render = () => {
-        if (this.state.redirect) {
-            return <Redirect to="/" />
-        }
-
         return modal(
             <form onSubmit={ this.login }>
                 Username
@@ -202,7 +190,7 @@ const ApproveTeam = () => (
 
 const SubmitScore = () => (
     <div className="button" id = "submitButtonScore">
-        <div className="button">Submit Score</div>
+        <Link to="/submit-score"><div className="button">Submit Score</div></Link>
     </div>
 )
 
@@ -239,7 +227,7 @@ class App extends React.Component {
         this.setState({token: data})
     }
 
-    post = (url, data, success) => {
+    post = (url, data, handleSuccess, handleError) => {
         let token = this.state.token
         let headers = {}
         if (token) {
@@ -252,10 +240,15 @@ class App extends React.Component {
             headers: headers,
             data: data,
           })
-        .then(success)
-        .catch(response => this.setState({
-            error: response.toString()
-        }))
+        .then(handleSuccess)
+        .catch(error => {
+            let logError = (msg) => this.setState({ error: msg.toString() })
+            if (handleError) {
+                handleError(error, logError)
+            } else {
+                logError(error.response.status + " " + error.response.statusText);
+            }
+        })
     }
 
     clearError = () => this.setState({error: null})
@@ -281,6 +274,7 @@ class App extends React.Component {
                 <HashRouter>
                     <Route path="/" component={ Main } />
                     <Route path="/login" exact component={ Login } />
+                    <Route path="/submit-score" exact component={ SubmitScoreForm } />
                 </HashRouter>
                 { this.state.error ? <Fail error={ this.state.error } /> : null }
             </UserContext.Provider>
