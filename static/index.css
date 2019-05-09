@@ -122,7 +122,19 @@ form input[type=submit]:focus {
   cursor: pointer;
 }
 
-.menu-top, .menu-action, .menu-info {
+.menu-top {
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+}
+
+.menu-action, .menu-info {
   padding-left: 10px;
   padding-right: 10px;
 }
@@ -148,8 +160,6 @@ form input[type=submit]:focus {
 
 /* pankaj */
 .PlaySlot {
-	-webkit-box-shadow:0px 0px 5px 1px #ff0000 ;
-	-moz-box-shadow:0px 0px 5px 1px #ff0000 ;
 	box-shadow:0px 0px 5px 1px #ff0000 ;
 	background-color: #555555;
 	border: none;

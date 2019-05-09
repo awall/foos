@@ -32,7 +32,7 @@ class Login extends React.Component {
                 password: this.refs.password.value,
             }, response => {
                 this.context.setToken(response.data)
-                this.props.history.push('/')
+                this.props.history.goBack()
             }, (error, logError) => {
                 if (error.response.status == 401) {
                     this.setState({ failed: true })
@@ -67,46 +67,30 @@ class Login extends React.Component {
     }
 }
 
-class OtherMenu extends React.Component {
-    static contextType = UserContext
-
-    constructor(props) {
-        super(props)
-    }
-
-    test = () => this.context.post(
-        '/api/needsadmin',
-        {},
-        response => alert('success' + response)
-    )
-
-    render = () => (
-        <div className="menu">
-            <div className="menu-top">Random Stuff</div>
-            <div className="menu-popup">
-                <div className="menu-info">Some info</div>
-                <div className="menu-action" onClick={ this.test }>Requires Auth or FAIL!</div>
-                <div className="menu-action">Some action #2</div>
-            </div>
-        </div>
-    )
-}
-
-
 const UserMenu = () => (
-    <UserContext.Consumer>{({username, clearToken}) => (
-        <div className="menu">
-            <div id="avatar" className="menu-top">
-                { username == null ? '[not logged in]' : username }
-            </div>
-            <div className="menu-popup">
-                { username == null ? null : <div className="menu-info">logged in as { username }</div> }
-                { username == null
-                    ? <Link to="/login"><div className="menu-action">log in</div></Link>
-                    : <div className="menu-action" onClick={ clearToken }>log out</div> }
-            </div>
-        </div>
-    )}</UserContext.Consumer>
+    <UserContext.Consumer>{({username, clearToken}) => {
+        if (username) {
+            return (
+                <div className="menu">
+                    <div id="avatar" className="menu-top">{ username }</div>
+                    <div className="menu-popup">
+                        <div className="menu-info">logged in as { username }</div>
+                        <div className="menu-action" onClick={ clearToken }>log out</div>
+                    </div>
+                </div>
+            )
+        } else {
+            return (
+                <div className="menu">
+                    <Link to="/login">
+                        <div id="avatar" className="menu-top">
+                            [click here to log in]
+                        </div>
+                    </Link>
+                </div>
+            )
+        }
+    }}</UserContext.Consumer>
 )
 
 const Toolbar = () => (
@@ -120,7 +104,6 @@ const Toolbar = () => (
                 { admin ? <ApproveTeam /> : null }
                 <SubmitScore />
                 <SubmitTeam />
-                <OtherMenu />
                 <UserMenu />
             </div>
         </div>
@@ -136,10 +119,52 @@ const Main = () => (
     </div>
 )
 
-//
-// START pankaj
-//
-const SubmitTeamForm = () => modal(
+class SubmitTeamForm extends React.Component {
+    static contextType = UserContext
+
+    submit = event => {
+        // we need this to stop the default behaviour, which is posting to "/" using the username and password as query parameters
+        event.preventDefault()
+        this.props.history.goBack()
+        /* this.context
+            .post('/api/login', {
+                username: this.refs.username.value,
+                password: this.refs.password.value,
+            }, response => {
+                this.context.setToken(response.data)
+                this.props.history.push('/')
+            }, (error, logError) => {
+                if (error.response.status == 401) {
+                    this.setState({ failed: true })
+                } else {
+                    logError(error.response.status + " " + error.response.statusText)
+                }
+            })
+            */
+    }
+
+    render = () => {
+        return modal(
+            <form onSubmit={ this.submit }>
+                Team Name
+                <br />
+                <input type="text" name="teamname" />
+                <br />
+                <br />
+                Members
+                <br />
+                <input type="text" name="member1" />
+                <br />
+                <input type="text" name="member2" />
+                <br />
+                <br />
+                <input type="submit" value="Submit"/>
+            </form>
+        )
+    }
+}
+
+const ApproveTeamForm = () => modal(
     <form>
         Team Name
         <br />
@@ -160,22 +185,6 @@ const SubmitTeamForm = () => modal(
     </form>
 )
 
-const SubmitScoreForm = () => modal(
-    <form>
-        Your Score
-        <br />
-        <input type="number" name="yourscore" />
-        <br />
-        <br />
-        Opponent Score
-        <br />
-        <input type="number" name="opponentscore" />
-        <br />
-        <br />
-        <input type="button" value="Submit"/>
-    </form>
-)
-
 const ApproveScore = () => (
     <div className="button" id = "ApproveButtonScore">
         <div className="button">Approve Score</div>
@@ -184,19 +193,19 @@ const ApproveScore = () => (
 
 const ApproveTeam = () => (
     <div className="button" id = "ApproveButtonTeam">
-        <div className="button">Approve Team</div>
+        <Link to="/approve-team"><div className="button">Approve Team</div></Link>
     </div>
 )
 
 const SubmitScore = () => (
     <div className="button" id = "submitButtonScore">
-        <Link to="/submit-score"><div className="button">Submit Score</div></Link>
+        <div className="button">Submit Score</div>
     </div>
 )
 
 const SubmitTeam = () => (
     <div className="button" id = "submitButtonTeam">
-        <div className="button">Submit Team</div>
+        <Link to="/submit-team"><div className="button">Submit Team</div></Link>
     </div>
 )
 //
@@ -274,7 +283,8 @@ class App extends React.Component {
                 <HashRouter>
                     <Route path="/" component={ Main } />
                     <Route path="/login" exact component={ Login } />
-                    <Route path="/submit-score" exact component={ SubmitScoreForm } />
+                    <Route path="/submit-team" exact component={ SubmitTeamForm } />
+                    <Route path="/approve-team" exact component={ ApproveTeamForm } />
                 </HashRouter>
                 { this.state.error ? <Fail error={ this.state.error } /> : null }
             </UserContext.Provider>
