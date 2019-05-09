@@ -174,9 +174,11 @@ class App extends React.Component {
         let header = parts ? JSON.parse(window.atob(parts[0])) : null
         let payload = parts ? JSON.parse(window.atob(parts[1])) : null
         let username = payload ? payload.username : null
+        let admin = payload ? payload.admin : false
 
         this.setState({
             username: username,
+            admin: admin,
         })
     }
 
@@ -187,6 +189,7 @@ class App extends React.Component {
     render() {
         let auth = {
             username: this.state.username,
+            admin: this.state.admin,
             clearToken: this.clearToken,
             setToken: this.setToken,
         }

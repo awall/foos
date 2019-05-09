@@ -42,10 +42,11 @@ fn login(credentials: Json<Login>) -> Result<String, Status> {
     let username = login.username;
     let password = login.password;
 
-    if username.eq(&password) {
+    if username == password {
+        let admin = "admin" == &username;
         let claims = Claims {
             username: username,
-            admin: false,
+            admin: admin,
         };
         Result::Ok(to_jwt(&claims))
     } else {
