@@ -24,6 +24,7 @@ form input[type=submit]:focus {
 .error  {
   color: red;
   font-weight: bold;
+  white-space: nowrap;
 }
 
 /* modal */

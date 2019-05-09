@@ -1,5 +1,20 @@
 const UserContext = React.createContext({})
 
+const Fail = ({error}) => modal(
+    <UserContext.Consumer>
+        {({clearError}) => (
+            <form onSubmit={ e => { e.preventDefault(); clearError(); }}>
+                <br />
+                <div class="error">{ error }</div>
+                <br />
+                <br />
+                <input type="submit" value="Ok" />
+            </form>
+        )}
+    </UserContext.Consumer>
+)
+
+
 class Login extends React.Component {
     static contextType = UserContext
 
@@ -64,6 +79,32 @@ class Login extends React.Component {
     }
 }
 
+class OtherMenu extends React.Component {
+    static contextType = UserContext
+
+    constructor(props) {
+        super(props)
+    }
+
+    test = () => this.context.post(
+        '/api/needsadmin',
+        {},
+        response => alert('success' + response)
+    )
+
+    render = () => (
+        <div className="menu">
+            <div className="menu-top">Random Stuff</div>
+            <div className="menu-popup">
+                <div className="menu-info">Some info</div>
+                <div className="menu-action" onClick={ this.test }>Requires Auth or FAIL!</div>
+                <div className="menu-action">Some action #2</div>
+            </div>
+        </div>
+    )
+}
+
+
 const UserMenu = () => (
     <UserContext.Consumer>{({username, clearToken}) => (
         <div className="menu">
@@ -78,17 +119,6 @@ const UserMenu = () => (
             </div>
         </div>
     )}</UserContext.Consumer>
-)
-
-const OtherMenu = () => (
-    <div className="menu">
-        <div className="menu-top">Random Stuff</div>
-        <div className="menu-popup">
-            <div className="menu-info">Some info</div>
-            <div className="menu-action">Some action #1</div>
-            <div className="menu-action">Some action #2</div>
-        </div>
-    </div>
 )
 
 const Toolbar = () => (
@@ -117,6 +147,7 @@ class App extends React.Component {
         super(props)
         this.state = {
             token: null,
+            error: null,
         }
     }
 
@@ -135,6 +166,27 @@ class App extends React.Component {
         this.setState({token: data})
     }
 
+    post = (url, data, success) => {
+        let token = this.state.token
+        let headers = {}
+        if (token) {
+            headers = { 'Authorization': 'Bearer ' + token }
+        }
+
+        axios({
+            method: 'post',
+            url: url,
+            headers: headers,
+            data: data,
+          })
+        .then(success)
+        .catch(response => this.setState({
+            error: response.toString()
+        }))
+    }
+
+    clearError = () => this.setState({error: null})
+
     render = () => {
         let raw = this.state.token
         let parts = raw ? raw.split('.') : null
@@ -150,11 +202,14 @@ class App extends React.Component {
                 token: raw,
                 setToken: this.setToken,
                 clearToken: this.clearToken,
+                post: this.post,
+                clearError: this.clearError,
             }}>
                 <HashRouter>
-                    <Route path="/" component={Main} />
-                    <Route path="/login" exact component={Login} />
+                    <Route path="/" component={ Main } />
+                    <Route path="/login" exact component={ Login } />
                 </HashRouter>
+                { this.state.error ? <Fail error={ this.state.error } /> : null }
             </UserContext.Provider>
         )
     }
