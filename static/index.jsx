@@ -122,19 +122,21 @@ const UserMenu = () => (
 )
 
 const Toolbar = () => (
-    <div id="toolbar">
-        <div id="bigbar">
-            BIG BAR CONTENT HERE
+    <UserContext.Consumer>{({admin}) => (
+        <div id="toolbar">
+            <div id="bigbar">
+                BIG BAR CONTENT HERE
+            </div>
+            <div id="smallbar">
+                { admin ? <ApproveScore /> : null }
+                { admin ? <ApproveTeam /> : null }
+                <SubmitScore />
+                <SubmitTeam />
+                <OtherMenu />
+                <UserMenu />
+            </div>
         </div>
-        <div id="smallbar">
-            <ApproveScore />
-			<ApproveTeam />
-		    <SubmitScore />
-			<SubmitTeam />
-            <OtherMenu />
-            <UserMenu />
-        </div>
-    </div>
+    )}</UserContext.Consumer>
 )
 
 const Main = () => (
