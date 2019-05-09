@@ -1,6 +1,7 @@
-const BrowserRouter = ReactRouterDOM.BrowserRouter
-const Route = ReactRouterDOM.Route
+const HashRouter = ReactRouterDOM.HashRouter
 const Link = ReactRouterDOM.Link
+const Redirect = ReactRouterDOM.Redirect
+const Route = ReactRouterDOM.Route
 
 function modal(body) {
     return (

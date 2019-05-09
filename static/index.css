@@ -10,15 +10,20 @@ a {
   text-decoration: none;
 }
 
-form input[type=button] {
+form input[type=submit] {
   width: 100%;
   height: 3em;
   font-weight: bold;
   border: 1px solid black;
 }
 
-form input[type=button]:focus {
+form input[type=submit]:focus {
   outline: none;
+}
+
+.error  {
+  color: red;
+  font-weight: bold;
 }
 
 /* modal */
@@ -110,6 +115,10 @@ form input[type=button]:focus {
 .menu * {
   line-height: 32px;
   vertical-align: center;
+}
+
+.menu-top, .menu-action {
+  cursor: pointer;
 }
 
 .menu-top, .menu-action, .menu-info {
