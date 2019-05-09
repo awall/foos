@@ -7,3 +7,4 @@ authors = ["awall"]
 rocket = "0.4"
 rocket_contrib = "0.4"
 serde = { version = "1.0", features = ["derive"] }
+jsonwebtoken = "5.0"

@@ -4,12 +4,20 @@
 extern crate rocket;
 extern crate rocket_contrib;
 extern crate serde;
+extern crate jsonwebtoken;
 
 use rocket::http::Status;
 use rocket_contrib::json::Json;
 use rocket_contrib::serve::StaticFiles;
 
 use serde::{Serialize, Deserialize};
+use jsonwebtoken as jwt;
+
+const SECRET: &str = "oogly_woogly_bugle_boy_from_company_B!";
+
+fn to_jwt(claims: &Claims) -> String {
+    jwt::encode(&jwt::Header::default(), claims, SECRET.as_ref()).unwrap()
+}
 
 #[get("/hello")]
 fn hello() -> &'static str {
@@ -23,23 +31,23 @@ struct Login {
 }
 
 #[derive(Serialize, Debug)]
-struct AuthToken {
+struct Claims {
     username: String,
-    roles: Vec<String>,
+    admin: bool,
 }
 
 #[post("/login", data="<credentials>")]
-fn login(credentials: Json<Login>) -> Result<Json<AuthToken>, Status> {
+fn login(credentials: Json<Login>) -> Result<String, Status> {
     let Json(login) = credentials;
     let username = login.username;
     let password = login.password;
 
     if username.eq(&password) {
-        let token = AuthToken {
+        let claims = Claims {
             username: username,
-            roles: vec!(),
+            admin: false,
         };
-        Result::Ok(Json(token))
+        Result::Ok(to_jwt(&claims))
     } else {
         Result::Err(Status::Unauthorized)
     }

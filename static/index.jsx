@@ -21,14 +21,14 @@ class Login extends React.Component {
                 password: this.refs.password.value,
             })
             .then(response => {
-                auth.setAuthToken(response.data)
+                auth.setToken(response.data)
                 this.setState({
                     failed: false,
                     redirect: true,
                 })
             })
             .catch(response => {
-                auth.clearAuthToken()
+                auth.clearToken()
                 this.setState({
                     failed: true,
                     redirect: false,
@@ -73,13 +73,12 @@ class UserMenu extends React.Component {
     }
 
     logout() {
-        this.props.auth.clearAuthToken()
+        this.props.auth.clearToken()
     }
 
     render() {
         let auth = this.props.auth
-        let token = auth.token
-        let user = token.username
+        let user = auth.username
 
         return (
             <div className="menu">
@@ -152,40 +151,44 @@ class App extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
-            authToken: {},
+            username: null,
         }
 
-        this.setAuthToken = this.setAuthToken.bind(this)
-        this.clearAuthToken = this.clearAuthToken.bind(this)
+        this.setToken = this.setToken.bind(this)
+        this.clearToken = this.clearToken.bind(this)
     }
 
-    setAuthToken(data) {
-        sessionStorage.setItem("foosAuthToken", JSON.stringify(data))
-        this.reloadAuthToken()
+    setToken(data) {
+        sessionStorage.setItem("foosToken", data)
+        this.reloadToken()
     }
 
-    clearAuthToken() {
-        sessionStorage.removeItem("foosAuthToken")
-        this.reloadAuthToken()
+    clearToken() {
+        sessionStorage.removeItem("foosToken")
+        this.reloadToken()
     }
 
-    reloadAuthToken() {
-        let rawToken = sessionStorage.getItem("foosAuthToken")
-        let token = rawToken ? JSON.parse(rawToken) : {}
+    reloadToken() {
+        let raw = sessionStorage.getItem("foosToken")
+        let parts = raw ? raw.split('.') : null
+        let header = parts ? JSON.parse(window.atob(parts[0])) : null
+        let payload = parts ? JSON.parse(window.atob(parts[1])) : null
+        let username = payload ? payload.username : null
+
         this.setState({
-            authToken: token,
+            username: username,
         })
     }
 
     componentDidMount() {
-        this.reloadAuthToken()
+        this.reloadToken()
     }
 
     render() {
         let auth = {
-            token: this.state.authToken,
-            clearAuthToken: this.clearAuthToken,
-            setAuthToken: this.setAuthToken,
+            username: this.state.username,
+            clearToken: this.clearToken,
+            setToken: this.setToken,
         }
 
         return (
