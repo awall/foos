@@ -8,6 +8,7 @@ extern crate rocket;
 extern crate rocket_contrib;
 extern crate serde;
 extern crate jsonwebtoken;
+extern crate uuid;
 
 use std::sync::RwLock;
 use std::time::SystemTime;
@@ -17,6 +18,7 @@ use rocket::http::Status;
 use rocket::request::{Outcome, FromRequest, Request};
 use rocket_contrib::json::Json;
 use rocket_contrib::serve::StaticFiles;
+use rocket_contrib::uuid::Uuid;
 
 use serde::{Serialize, Deserialize};
 use jsonwebtoken as jwt;
@@ -49,6 +51,7 @@ struct TeamSubmission {
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 struct TeamSubmissionRecord {
+    id: uuid::Uuid,
     author: String,
     name: String,
     members: Vec<String>,
@@ -124,16 +127,27 @@ fn from_jwt(raw: &str) -> Result<Claims, jwt::errors::Error> {
 fn submit_team(json: Json<TeamSubmission>, claims: Claims, records: State<TeamSubmissionRecords>) -> Status {
     let Json(submission) = json;
     let record = TeamSubmissionRecord {
+        id: uuid::Uuid::new_v4(),
         author: claims.username,
         name: submission.name.clone(),
         members: submission.members.clone(),
     };
     match records.0.write().ok() {
-        Some(mut r) => { 
+        Some(mut r) => {
             r.push(record);
             Status::Ok
         },
         None => Status::InternalServerError,
+    }
+}
+
+#[post("/reject-submission/<id>")]
+fn reject_submission(id: Uuid, _admin: Admin, records: State<TeamSubmissionRecords>) {
+    match records.0.write().ok() {
+        Some(mut r) => {
+            r.retain(|value| value.id != *id)
+        },
+        None => (),
     }
 }
 
@@ -174,7 +188,7 @@ fn main() {
     let empty: Vec<TeamSubmissionRecord> = vec!();
     let records = TeamSubmissionRecords(RwLock::new(empty));
     rocket::ignite()
-        .mount("/api", routes![login, submit_team, team_submissions])
+        .mount("/api", routes![login, submit_team, reject_submission, team_submissions])
         .mount("/", StaticFiles::from("static"))
         .manage(records)
         .launch();

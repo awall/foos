@@ -32,7 +32,7 @@ class Login extends React.Component {
                 password: this.refs.password.value,
             }, response => {
                 this.context.setToken(response.data)
-                this.props.history.goBack()
+                this.props.history.push('/')
             }, (error, logError) => {
                 if (error.response.status == 401) {
                     this.setState({ failed: true })
@@ -78,7 +78,7 @@ const UserMenu = () => (
                 </div>
             </When>
             <Unless value={username}>
-                <Link to="login/">
+                <Link to="/login">
                     <div id="avatar" className="menu-top">
                         [click here to log in]
                     </div>
@@ -95,14 +95,17 @@ const Toolbar = () => (
                 <img src="aucerna.png" />
             </div>
             <div id="smallbar">
+                <div className="menu">
+                    <Link to="/overview"><div className="menu-top">Standings</div></Link>
+                </div>
                 <When value={admin}>
                     <div className="menu">
-                        <Link to="/assign-team/"><div className="menu-top">Assign Teams</div></Link>
+                        <Link to="/assign-team"><div className="menu-top">Assign Teams</div></Link>
                     </div>
                 </When>
                 <When value={username}>
                     <div className="menu">
-                        <Link to="submit-team/"><div className="menu-top">Submit Team</div></Link>
+                        <Link to="/submit-team"><div className="menu-top">Submit Team</div></Link>
                     </div>
                 </When>
                 <UserMenu />
@@ -123,7 +126,7 @@ class SubmitTeam extends React.Component {
                 name: this.refs.team.value,
                 members: [ this.refs.member1.value, this.refs.member2.value],
             }, response => {
-                this.props.history.goBack()
+                this.props.history.push('/')
             })
     }
 
@@ -135,7 +138,7 @@ class SubmitTeam extends React.Component {
         }
     }
 
-    render = () => modal( 
+    render = () => modal(
         <form onSubmit={ this.submit }>
             Team
             <br />
@@ -154,29 +157,75 @@ class SubmitTeam extends React.Component {
     )
 }
 
+class AssignSubmission extends React.Component {
+    static contextType = UserContext
+
+    constructor(props) {
+        super(props)
+    }
+
+    reject = () => {
+        this.props.reject(this.props.value)
+    }
+
+    render = () => {
+        let value = this.props.value
+        let members = []
+        for (let index in value.members) {
+            let member = value.members[index]
+            members.push(<div className="member">{ member }</div>)
+        }
+
+        return (
+            <div className="submission">
+                <input className="reject" type="button" value="Reject" onClick={ this.reject }/>
+                <div className="team-name">{ value.name }</div>
+                <div className="members">
+                    { members }
+                </div>
+                <div className="submitted-by"><br /><br />submitted by { value.author }</div>
+            </div>
+        )
+    }
+}
+
 class AssignTeam extends React.Component {
     static contextType = UserContext
 
     constructor(props) {
         super(props)
-        this.state = {
-            json: [ "LOADING..." ],
-        }
+        this.state = { json: [ ], rejected: [] }
+    }
+
+    reject = submission => {
+        this.context
+            .post('/api/reject-submission/' + submission.id, {},
+            response => {
+                let rejected = this.state.rejected
+                rejected.push(submission.id)
+                this.setState({rejected: rejected})
+            })
     }
 
     componentDidMount = () => {
         this.context.get(
-            '/api/team-submissions', 
+            '/api/team-submissions',
             response => this.setState({json: response.data }))
     }
 
-    render = () => (
-        <div>{ 
-            this.state.json.map(j => {
-                <div>A SUBMISSION <br /></div>
-            })
-        }</div>
-    )
+    render = () => {
+        let elements = []
+        for (let index in this.state.json) {
+            let submission = this.state.json[index]
+            if (!this.state.rejected.includes(submission.id, 0)) {
+                elements.push(<AssignSubmission value={ submission } reject={ this.reject } />)
+            }
+        }
+
+        return (
+            <div>{ elements }</div>
+        )
+    }
 }
 
 class App extends React.Component {
@@ -269,17 +318,17 @@ class App extends React.Component {
             }}>
                 <HashRouter>
                     <div>
-                        <Toolbar />                                
+                        <Toolbar />
                         <div id="main">
                             <Switch>
-                                <Route path="/assign-team/" component={ AssignTeam } />
-                                <Route path="/" component={ Overview } />
+                                <Route exact path="/assign-team" component={ AssignTeam } />
+                                <Route exact path="/overview" component={ Overview } />
                             </Switch>
                         </div>
                     </div>
 
-                    <Route path="*/login/" component={ Login } />
-                    <Route path="*/submit-team/" component={ SubmitTeam } />
+                    <Route exact path="/login" component={ Login } />
+                    <Route exact path="/submit-team" component={ SubmitTeam } />
                 </HashRouter>
                 { this.state.error ? <Fail error={ this.state.error } /> : null }
             </UserContext.Provider>
