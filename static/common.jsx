@@ -25,3 +25,5 @@ class When extends React.Component {
 class Unless extends React.Component {
     render = () => this.props.value ? null : this.props.children
 }
+
+const UserContext = React.createContext({})

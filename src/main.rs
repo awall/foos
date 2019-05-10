@@ -59,12 +59,14 @@ struct TeamSubmissionRecord {
 
 struct TeamSubmissionRecords(RwLock<Vec<TeamSubmissionRecord>>);
 
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Serialize, Clone, Debug)]
 struct Team {
     name: String,
     members: Vec<String>,
     slot: i32,
 }
+
+struct Teams(RwLock<Vec<Team>>);
 
 fn interpret_auth_header(header: String) -> Option<Claims> {
     let words: Vec<String> = header.split_whitespace().map(String::from).collect();
@@ -151,10 +153,48 @@ fn reject_submission(id: Uuid, _admin: Admin, records: State<TeamSubmissionRecor
     }
 }
 
+#[post("/approve-submission/<id>")]
+fn approve_submission(id: Uuid, _admin: Admin, records: State<TeamSubmissionRecords>, teams: State<Teams>) {
+    match records.0.read().ok() {
+        Some(r) => {
+            let v = r.iter().find(|value| value.id == *id).unwrap();
+            let slot = teams.0.read().unwrap().len();
+
+            match teams.0.write().ok() {
+                Some(mut t) => {
+                    t.push(Team {
+                        name: v.name.clone(),
+                        members: v.members.clone(),
+                        slot: slot as i32,
+                    })
+                },
+                None => (),
+            }
+        },
+        None => (),
+    };
+
+    match records.0.write().ok() {
+        Some(mut r) => {
+            r.retain(|value| value.id != *id);
+        },
+        None => (),
+    }
+}
+
 #[get("/team-submissions")]
 fn team_submissions(records: State<TeamSubmissionRecords>) -> Result<Json<Vec<TeamSubmissionRecord>>, Status> {
     // TODO: think about this some more... why should I have to clone the list just to make a JSON copy of it again?
     match records.0.read() {
+        Ok(r) => Result::Ok(Json(r.clone())),
+        _ => Result::Err(Status::InternalServerError)
+    }
+}
+
+#[get("/teams")]
+fn teams(teams: State<Teams>) -> Result<Json<Vec<Team>>, Status> {
+    // TODO: think about this some more... why should I have to clone the list just to make a JSON copy of it again?
+    match teams.0.read() {
         Ok(r) => Result::Ok(Json(r.clone())),
         _ => Result::Err(Status::InternalServerError)
     }
@@ -185,11 +225,12 @@ fn login(json: Json<Login>) -> Result<String, Status> {
 }
 
 fn main() {
-    let empty: Vec<TeamSubmissionRecord> = vec!();
-    let records = TeamSubmissionRecords(RwLock::new(empty));
+    let records = TeamSubmissionRecords(RwLock::new(vec!()));
+    let teams = Teams(RwLock::new(vec!()));
     rocket::ignite()
-        .mount("/api", routes![login, submit_team, reject_submission, team_submissions])
+        .mount("/api", routes![login, submit_team, reject_submission, approve_submission, team_submissions, teams])
         .mount("/", StaticFiles::from("static"))
         .manage(records)
+        .manage(teams)
         .launch();
 }

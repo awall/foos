@@ -1,5 +1,3 @@
-const UserContext = React.createContext({})
-
 const Fail = ({error}) => modal(
     <UserContext.Consumer>
         {({clearError}) => (
@@ -168,6 +166,10 @@ class AssignSubmission extends React.Component {
         this.props.reject(this.props.value)
     }
 
+    approve = () => {
+        this.props.approve(this.props.value)
+    }
+
     render = () => {
         let value = this.props.value
         let members = []
@@ -179,6 +181,7 @@ class AssignSubmission extends React.Component {
         return (
             <div className="submission">
                 <input className="reject" type="button" value="Reject" onClick={ this.reject }/>
+                <input className="reject" type="button" value="Approve" onClick={ this.approve }/>
                 <div className="team-name">{ value.name }</div>
                 <div className="members">
                     { members }
@@ -195,6 +198,16 @@ class AssignTeam extends React.Component {
     constructor(props) {
         super(props)
         this.state = { json: [ ], rejected: [] }
+    }
+
+    approve = submission => {
+        this.context
+            .post('/api/approve-submission/' + submission.id, {},
+            response => {
+                let rejected = this.state.rejected
+                rejected.push(submission.id)
+                this.setState({rejected: rejected})
+            })
     }
 
     reject = submission => {
@@ -218,7 +231,7 @@ class AssignTeam extends React.Component {
         for (let index in this.state.json) {
             let submission = this.state.json[index]
             if (!this.state.rejected.includes(submission.id, 0)) {
-                elements.push(<AssignSubmission value={ submission } reject={ this.reject } />)
+                elements.push(<AssignSubmission value={ submission } approve={ this.approve } reject={ this.reject } />)
             }
         }
 
