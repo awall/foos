@@ -104,6 +104,10 @@ form input[type=submit]:focus {
   background-repeat: no-repeat;
 }
 
+#avatar {
+  background-color: black;
+}
+
 .menu {
   display: inline-block;
 }
@@ -123,6 +127,7 @@ form input[type=submit]:focus {
 }
 
 .menu-top {
+  background-color: #008CBA;
   border: none;
   color: white;
   padding: 15px 32px;

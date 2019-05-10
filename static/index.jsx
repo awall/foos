@@ -68,29 +68,24 @@ class Login extends React.Component {
 }
 
 const UserMenu = () => (
-    <UserContext.Consumer>{({username, clearToken}) => {
-        if (username) {
-            return (
-                <div className="menu">
-                    <div id="avatar" className="menu-top">{ username }</div>
-                    <div className="menu-popup">
-                        <div className="menu-info">logged in as { username }</div>
-                        <div className="menu-action" onClick={ clearToken }>log out</div>
+    <UserContext.Consumer>{({username, clearToken}) => (
+        <div className="menu">
+            <When value={username}>
+                <div id="avatar" className="menu-top">{ username }</div>
+                <div className="menu-popup">
+                    <div className="menu-info">logged in as { username }</div>
+                    <div className="menu-action" onClick={ clearToken }>log out</div>
+                </div>
+            </When>
+            <Unless value={username}>
+                <Link to="login">
+                    <div id="avatar" className="menu-top">
+                        [click here to log in]
                     </div>
-                </div>
-            )
-        } else {
-            return (
-                <div className="menu">
-                    <Link to="/login">
-                        <div id="avatar" className="menu-top">
-                            [click here to log in]
-                        </div>
-                    </Link>
-                </div>
-            )
-        }
-    }}</UserContext.Consumer>
+                </Link>
+            </Unless>
+        </div>
+    )}</UserContext.Consumer>
 )
 
 const Toolbar = () => (
@@ -100,26 +95,21 @@ const Toolbar = () => (
                 BIG BAR CONTENT HERE
             </div>
             <div id="smallbar">
-                { admin ? <ApproveScore /> : null }
-                { admin ? <ApproveTeam /> : null }
-                <SubmitScore />
-                <SubmitTeam />
+                <When value={admin}>
+                    <div className="menu">
+                        <Link to="assign-team"><div className="menu-top">Assign Teams</div></Link>
+                    </div>
+                </When>
+                <div className="menu">
+                    <Link to="submit-team"><div className="menu-top">Submit Team</div></Link>
+                </div>
                 <UserMenu />
             </div>
         </div>
     )}</UserContext.Consumer>
 )
 
-const Main = () => (
-    <div>
-        <Toolbar />
-        <div id="main">
-            <Overview />
-        </div>
-    </div>
-)
-
-class SubmitTeamForm extends React.Component {
+class SubmitTeam extends React.Component {
     static contextType = UserContext
 
     submit = event => {
@@ -164,53 +154,11 @@ class SubmitTeamForm extends React.Component {
     }
 }
 
-const ApproveTeamForm = () => modal(
-    <form>
-        Team Name
-        <br />
-        <input type="text" name="teamname" />
-        <br />
-        <br />
-        Member Name1
-        <br />
-        <input type="text" name="membername1" />
-        <br />
-        <br />
-		Member Name2
-        <br />
-        <input type="text" name="membername2" />
-        <br />
-        <br />
-        <input type="button" value="Submit"/>
-    </form>
-)
-
-const ApproveScore = () => (
-    <div className="button" id = "ApproveButtonScore">
-        <div className="button">Approve Score</div>
+const AssignTeam = () => (
+    <div>
+        ASSIGN TO ME HERE!!!!
     </div>
 )
-
-const ApproveTeam = () => (
-    <div className="button" id = "ApproveButtonTeam">
-        <Link to="/approve-team"><div className="button">Approve Team</div></Link>
-    </div>
-)
-
-const SubmitScore = () => (
-    <div className="button" id = "submitButtonScore">
-        <div className="button">Submit Score</div>
-    </div>
-)
-
-const SubmitTeam = () => (
-    <div className="button" id = "submitButtonTeam">
-        <Link to="/submit-team"><div className="button">Submit Team</div></Link>
-    </div>
-)
-//
-// END pankaj
-//
 
 class App extends React.Component {
     constructor(props) {
@@ -281,10 +229,20 @@ class App extends React.Component {
                 clearError: this.clearError,
             }}>
                 <HashRouter>
-                    <Route path="/" component={ Main } />
-                    <Route path="/login" exact component={ Login } />
-                    <Route path="/submit-team" exact component={ SubmitTeamForm } />
-                    <Route path="/approve-team" exact component={ ApproveTeamForm } />
+                    <div>
+                        <Toolbar />                                
+                        <div id="main">
+                            <Switch>
+                                <When value={ admin }>
+                                    <Route path="/assign-team" component={ AssignTeam } />
+                                </When>
+                                <Route component={ Overview } />
+                            </Switch>
+                        </div>
+                    </div>
+
+                    <Route path="*/login" component={ Login } />
+                    <Route path="*/submit-team" component={ SubmitTeam } />
                 </HashRouter>
                 { this.state.error ? <Fail error={ this.state.error } /> : null }
             </UserContext.Provider>
