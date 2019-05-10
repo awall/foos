@@ -138,11 +138,11 @@ fn submit_team(json: Json<TeamSubmission>, claims: Claims, records: State<TeamSu
 }
 
 #[get("/team-submissions")]
-fn team_submissions(_admin: Admin, records: State<TeamSubmissionRecords>) -> Option<Json<Vec<TeamSubmissionRecord>>> {
+fn team_submissions(records: State<TeamSubmissionRecords>) -> Result<Json<Vec<TeamSubmissionRecord>>, Status> {
     // TODO: think about this some more... why should I have to clone the list just to make a JSON copy of it again?
     match records.0.read() {
-        Ok(r) => Option::Some(Json(r.clone())),
-        _ => Option::None,
+        Ok(r) => Result::Ok(Json(r.clone())),
+        _ => Result::Err(Status::InternalServerError)
     }
 }
 

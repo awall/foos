@@ -160,20 +160,22 @@ class AssignTeam extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
-            json: "LOADING...",
+            json: [ "LOADING..." ],
         }
     }
 
     componentDidMount = () => {
         this.context.get(
             '/api/team-submissions', 
-            response => this.setState({json: response.data.toString() }))
+            response => this.setState({json: response.data }))
     }
 
     render = () => (
-        <div>
-            { this.state.json }
-        </div>
+        <div>{ 
+            this.state.json.map(j => {
+                <div>A SUBMISSION <br /></div>
+            })
+        }</div>
     )
 }
 
