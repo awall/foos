@@ -76,6 +76,10 @@ form input[type=submit]:focus {
   color: white;
 }
 
+#bigbar * {
+  vertical-align: center;
+}
+
 #smallbar {
   position: absolute;
   bottom: 0px;

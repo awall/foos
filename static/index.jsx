@@ -78,7 +78,7 @@ const UserMenu = () => (
                 </div>
             </When>
             <Unless value={username}>
-                <Link to="login">
+                <Link to="login/">
                     <div id="avatar" className="menu-top">
                         [click here to log in]
                     </div>
@@ -89,20 +89,22 @@ const UserMenu = () => (
 )
 
 const Toolbar = () => (
-    <UserContext.Consumer>{({admin}) => (
+    <UserContext.Consumer>{({username, admin}) => (
         <div id="toolbar">
             <div id="bigbar">
-                BIG BAR CONTENT HERE
+                <img src="aucerna.png" />
             </div>
             <div id="smallbar">
                 <When value={admin}>
                     <div className="menu">
-                        <Link to="assign-team"><div className="menu-top">Assign Teams</div></Link>
+                        <Link to="/assign-team/"><div className="menu-top">Assign Teams</div></Link>
                     </div>
                 </When>
-                <div className="menu">
-                    <Link to="submit-team"><div className="menu-top">Submit Team</div></Link>
-                </div>
+                <When value={username}>
+                    <div className="menu">
+                        <Link to="submit-team/"><div className="menu-top">Submit Team</div></Link>
+                    </div>
+                </When>
                 <UserMenu />
             </div>
         </div>
@@ -133,25 +135,31 @@ class SubmitTeam extends React.Component {
             */
     }
 
-    render = () => {
-        return modal(
-            <form onSubmit={ this.submit }>
-                Team Name
-                <br />
-                <input type="text" name="teamname" />
-                <br />
-                <br />
-                Members
-                <br />
-                <input type="text" name="member1" />
-                <br />
-                <input type="text" name="member2" />
-                <br />
-                <br />
-                <input type="submit" value="Submit"/>
-            </form>
-        )
+    componentDidMount = () => {
+        if (!this.context.admin) {
+            this.refs.member1.value = this.context.username
+            this.refs.team.value = this.context.username + "'s team"
+            this.refs.member1.disabled = true
+        }
     }
+
+    render = () => modal( 
+        <form onSubmit={ this.submit }>
+            Team
+            <br />
+            <input type="text" name="team" ref="team"/>
+            <br />
+            <br />
+            Members
+            <br />
+            <input type="text" name="member1" ref="member1" />
+            <br />
+            <input type="text" name="member2" ref="member2" />
+            <br />
+            <br />
+            <input type="submit" value="Submit" />
+        </form>
+    )
 }
 
 const AssignTeam = () => (
@@ -233,16 +241,14 @@ class App extends React.Component {
                         <Toolbar />                                
                         <div id="main">
                             <Switch>
-                                <When value={ admin }>
-                                    <Route path="/assign-team" component={ AssignTeam } />
-                                </When>
-                                <Route component={ Overview } />
+                                <Route path="/assign-team/" component={ AssignTeam } />
+                                <Route path="/" component={ Overview } />
                             </Switch>
                         </div>
                     </div>
 
-                    <Route path="*/login" component={ Login } />
-                    <Route path="*/submit-team" component={ SubmitTeam } />
+                    <Route path="*/login/" component={ Login } />
+                    <Route path="*/submit-team/" component={ SubmitTeam } />
                 </HashRouter>
                 { this.state.error ? <Fail error={ this.state.error } /> : null }
             </UserContext.Provider>
