@@ -118,21 +118,13 @@ class SubmitTeam extends React.Component {
         // we need this to stop the default behaviour, which is posting to "/" using the username and password as query parameters
         event.preventDefault()
         this.props.history.goBack()
-        /* this.context
-            .post('/api/login', {
-                username: this.refs.username.value,
-                password: this.refs.password.value,
+        this.context
+            .post('/api/submit-team', {
+                name: this.refs.team.value,
+                members: [ this.refs.member1.value, this.refs.member2.value],
             }, response => {
-                this.context.setToken(response.data)
-                this.props.history.push('/')
-            }, (error, logError) => {
-                if (error.response.status == 401) {
-                    this.setState({ failed: true })
-                } else {
-                    logError(error.response.status + " " + error.response.statusText)
-                }
+                this.props.history.goBack()
             })
-            */
     }
 
     componentDidMount = () => {
@@ -162,11 +154,28 @@ class SubmitTeam extends React.Component {
     )
 }
 
-const AssignTeam = () => (
-    <div>
-        ASSIGN TO ME HERE!!!!
-    </div>
-)
+class AssignTeam extends React.Component {
+    static contextType = UserContext
+
+    constructor(props) {
+        super(props)
+        this.state = {
+            json: "LOADING...",
+        }
+    }
+
+    componentDidMount = () => {
+        this.context.get(
+            '/api/team-submissions', 
+            response => this.setState({json: response.data.toString() }))
+    }
+
+    render = () => (
+        <div>
+            { this.state.json }
+        </div>
+    )
+}
 
 class App extends React.Component {
     constructor(props) {
@@ -190,6 +199,25 @@ class App extends React.Component {
     componentDidMount = () => {
         let data = sessionStorage.getItem("foosToken")
         this.setState({token: data})
+    }
+
+    get = (url, handleSuccess) => {
+        let token = this.state.token
+        let headers = {}
+        if (token) {
+            headers = { 'Authorization': 'Bearer ' + token }
+        }
+
+        axios({
+            method: 'get',
+            url: url,
+            headers: headers,
+          })
+        .then(handleSuccess)
+        .catch(error => {
+            let logError = (msg) => this.setState({ error: msg.toString() })
+            logError(error.response.status + " " + error.response.statusText);
+        })
     }
 
     post = (url, data, handleSuccess, handleError) => {
@@ -234,6 +262,7 @@ class App extends React.Component {
                 setToken: this.setToken,
                 clearToken: this.clearToken,
                 post: this.post,
+                get: this.get,
                 clearError: this.clearError,
             }}>
                 <HashRouter>

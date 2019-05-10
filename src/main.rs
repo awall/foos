@@ -9,8 +9,10 @@ extern crate rocket_contrib;
 extern crate serde;
 extern crate jsonwebtoken;
 
+use std::sync::RwLock;
 use std::time::SystemTime;
 
+use rocket::State;
 use rocket::http::Status;
 use rocket::request::{Outcome, FromRequest, Request};
 use rocket_contrib::json::Json;
@@ -38,6 +40,28 @@ struct Claims {
 
 #[derive(Deserialize, Serialize, Debug)]
 struct Admin { }
+
+#[derive(Deserialize, Serialize, Debug)]
+struct TeamSubmission {
+    name: String,
+    members: Vec<String>,
+}
+
+#[derive(Deserialize, Serialize, Clone, Debug)]
+struct TeamSubmissionRecord {
+    author: String,
+    name: String,
+    members: Vec<String>,
+}
+
+struct TeamSubmissionRecords(RwLock<Vec<TeamSubmissionRecord>>);
+
+#[derive(Deserialize, Serialize, Debug)]
+struct Team {
+    name: String,
+    members: Vec<String>,
+    slot: i32,
+}
 
 fn interpret_auth_header(header: String) -> Option<Claims> {
     let words: Vec<String> = header.split_whitespace().map(String::from).collect();
@@ -96,19 +120,40 @@ fn from_jwt(raw: &str) -> Result<Claims, jwt::errors::Error> {
     Result::Ok(token_data.claims)
 }
 
-#[post("/needsadmin")]
-fn needsadmin(_claims: Admin) -> Status {
-    Status::Ok
+#[post("/submit-team", data="<json>")]
+fn submit_team(json: Json<TeamSubmission>, claims: Claims, records: State<TeamSubmissionRecords>) -> Status {
+    let Json(submission) = json;
+    let record = TeamSubmissionRecord {
+        author: claims.username,
+        name: submission.name.clone(),
+        members: submission.members.clone(),
+    };
+    match records.0.write().ok() {
+        Some(mut r) => { 
+            r.push(record);
+            Status::Ok
+        },
+        None => Status::InternalServerError,
+    }
 }
 
-#[post("/login", data="<credentials>")]
-fn login(credentials: Json<Login>) -> Result<String, Status> {
-    let Json(login) = credentials;
+#[get("/team-submissions")]
+fn team_submissions(_admin: Admin, records: State<TeamSubmissionRecords>) -> Option<Json<Vec<TeamSubmissionRecord>>> {
+    // TODO: think about this some more... why should I have to clone the list just to make a JSON copy of it again?
+    match records.0.read() {
+        Ok(r) => Option::Some(Json(r.clone())),
+        _ => Option::None,
+    }
+}
+
+#[post("/login", data="<json>")]
+fn login(json: Json<Login>) -> Result<String, Status> {
+    let Json(login) = json;
     let username = login.username;
     let password = login.password;
 
     let iat = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap().as_secs();
-    let exp = iat + 3600;
+    let exp = iat + 360000;
 
     if username == password {
         let admin = "admin" == &username;
@@ -126,8 +171,11 @@ fn login(credentials: Json<Login>) -> Result<String, Status> {
 }
 
 fn main() {
+    let empty: Vec<TeamSubmissionRecord> = vec!();
+    let records = TeamSubmissionRecords(RwLock::new(empty));
     rocket::ignite()
-        .mount("/api", routes![login, needsadmin])
+        .mount("/api", routes![login, submit_team, team_submissions])
         .mount("/", StaticFiles::from("static"))
+        .manage(records)
         .launch();
 }

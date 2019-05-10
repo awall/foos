@@ -19,17 +19,9 @@ const when = (condition, body1, body2) => condition ? body1 : body2
 const unless = (condition, body) => condition ? null : body
 
 class When extends React.Component {
-    constructor(props) {
-        super(props)
-    }
-
     render = () => this.props.value ? this.props.children : null
 }
 
 class Unless extends React.Component {
-    constructor(props) {
-        super(props)
-    }
-
     render = () => this.props.value ? null : this.props.children
 }
