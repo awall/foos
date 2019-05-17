@@ -30,7 +30,7 @@ class Login extends React.Component {
                 password: this.refs.password.value,
             }, response => {
                 this.context.setToken(response.data)
-                this.props.history.push('/')
+                gotoParent(this)
             }, (error, logError) => {
                 if (error.response.status == 401) {
                     this.setState({ failed: true })
@@ -65,28 +65,29 @@ class Login extends React.Component {
     }
 }
 
-const UserMenu = () => (
+const UserMenu = ({location}) => (
     <UserContext.Consumer>{({username, clearToken}) => (
         <div className="menu">
-            <When value={username}>
-                <div id="avatar" className="menu-top">{ username }</div>
-                <div className="menu-popup">
-                    <div className="menu-info">logged in as { username }</div>
-                    <div className="menu-action" onClick={ clearToken }>log out</div>
-                </div>
-            </When>
-            <Unless value={username}>
-                <Link to="/login">
+            { username ?
+                <React.Fragment>
+                    <div id="avatar" className="menu-top">{ username }</div>
+                    <div className="menu-popup">
+                        <div className="menu-info">logged in as { username }</div>
+                        <div className="menu-action" onClick={ clearToken }>log out</div>
+                    </div>
+                </React.Fragment>
+            :
+                <PopupLink location={ location } to="login">
                     <div id="avatar" className="menu-top">
                         [click here to log in]
                     </div>
-                </Link>
-            </Unless>
+                </PopupLink>
+            }
         </div>
     )}</UserContext.Consumer>
 )
 
-const Toolbar = () => (
+const Toolbar = ({location}) => (
     <UserContext.Consumer>{({username, admin}) => (
         <div id="toolbar">
             <div id="bigbar">
@@ -96,17 +97,17 @@ const Toolbar = () => (
                 <div className="menu">
                     <Link to="/overview"><div className="menu-top">Standings</div></Link>
                 </div>
-                <When value={admin}>
+                { admin &&
                     <div className="menu">
                         <Link to="/assign-team"><div className="menu-top">Assign Teams</div></Link>
                     </div>
-                </When>
-                <When value={username}>
+                }
+                { username &&
                     <div className="menu">
-                        <Link to="/submit-team"><div className="menu-top">Submit Team</div></Link>
+                        <PopupLink location={ location } to="submit-team"><div className="menu-top">Submit Team</div></PopupLink>
                     </div>
-                </When>
-                <UserMenu />
+                }
+                <UserMenu location={ location } />
             </div>
         </div>
     )}</UserContext.Consumer>
@@ -118,13 +119,12 @@ class SubmitTeam extends React.Component {
     submit = event => {
         // we need this to stop the default behaviour, which is posting to "/" using the username and password as query parameters
         event.preventDefault()
-        this.props.history.goBack()
         this.context
             .post('/api/submit-team', {
                 name: this.refs.team.value,
                 members: [ this.refs.member1.value, this.refs.member2.value],
             }, response => {
-                this.props.history.push('/')
+                gotoParent(this)
             })
     }
 
@@ -331,17 +331,17 @@ class App extends React.Component {
             }}>
                 <HashRouter>
                     <div>
-                        <Toolbar />
+                        <Route path="/" component={ Toolbar } />
                         <div id="main">
                             <Switch>
-                                <Route exact path="/assign-team" component={ AssignTeam } />
-                                <Route exact path="/overview" component={ Overview } />
+                                <Route path="/assign-team" component={ AssignTeam } />
+                                <Route path="/overview" component={ Overview } />
                             </Switch>
                         </div>
                     </div>
 
-                    <Route exact path="/login" component={ Login } />
-                    <Route exact path="/submit-team" component={ SubmitTeam } />
+                    <Route path="*/login" component={ Login } />
+                    <Route path="*/submit-team" component={ SubmitTeam } />
                 </HashRouter>
                 { this.state.error ? <Fail error={ this.state.error } /> : null }
             </UserContext.Provider>
