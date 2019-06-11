@@ -4,6 +4,8 @@ const Redirect = ReactRouterDOM.Redirect
 const Route = ReactRouterDOM.Route
 const Switch = ReactRouterDOM.Switch
 
+const UserContext = React.createContext({})
+
 function modal(body) {
     return (
         <div>
@@ -14,19 +16,6 @@ function modal(body) {
         </div>
     )
 }
-
-const when = (condition, body1, body2) => condition ? body1 : body2
-const unless = (condition, body) => condition ? null : body
-
-class When extends React.Component {
-    render = () => this.props.value ? this.props.children : null
-}
-
-class Unless extends React.Component {
-    render = () => this.props.value ? null : this.props.children
-}
-
-const UserContext = React.createContext({})
 
 const withoutSlash = s => s.endsWith('/') ? s.slice(0, -1) : s
 
@@ -48,6 +37,7 @@ class PopupLink extends React.Component {
         super(props)
     }
 
-    render = () =>
-        <Link to={ withoutSlash(this.props.location.pathname) + '/' + this.props.to}>{ this.props.children }</Link>
+    render() {
+        return <Link to={ withoutSlash(this.props.location.pathname) + '/' + this.props.to}>{ this.props.children }</Link>
+    }
 }

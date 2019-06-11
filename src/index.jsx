@@ -1,3 +1,5 @@
+import { Overview } from './overview.js'
+
 const Fail = ({error}) => modal(
     <UserContext.Consumer>
         {({clearError}) => (
@@ -18,10 +20,13 @@ class Login extends React.Component {
 
     constructor(props) {
         super(props)
-        this.state = { failed: false }
+        this.login = this.login.bind(this)
+        this.state = {
+            failed: false
+        }
     }
 
-    login = event => {
+    login(event) {
         // we need this to stop the default behaviour, which is posting to "/" using the username and password as query parameters
         event.preventDefault()
         this.context
@@ -40,7 +45,7 @@ class Login extends React.Component {
             })
     }
 
-    render = () => {
+    render() {
         return modal(
             <form onSubmit={ this.login }>
                 Username
@@ -116,7 +121,12 @@ const Toolbar = ({location}) => (
 class SubmitTeam extends React.Component {
     static contextType = UserContext
 
-    submit = event => {
+    constructor(props) {
+        super(props)
+        this.submit = this.submit.bind(this)
+    }
+
+    submit(event) {
         // we need this to stop the default behaviour, which is posting to "/" using the username and password as query parameters
         event.preventDefault()
         this.context
@@ -128,7 +138,7 @@ class SubmitTeam extends React.Component {
             })
     }
 
-    componentDidMount = () => {
+    componentDidMount() {
         if (!this.context.admin) {
             this.refs.member1.value = this.context.username
             this.refs.team.value = this.context.username + "'s team"
@@ -136,23 +146,24 @@ class SubmitTeam extends React.Component {
         }
     }
 
-    render = () => modal(
-        <form onSubmit={ this.submit }>
-            Team
-            <br />
-            <input type="text" name="team" ref="team"/>
-            <br />
-            <br />
-            Members
-            <br />
-            <input type="text" name="member1" ref="member1" />
-            <br />
-            <input type="text" name="member2" ref="member2" />
-            <br />
-            <br />
-            <input type="submit" value="Submit" />
-        </form>
-    )
+    render() {
+        return modal(
+            <form onSubmit={ this.submit }>
+                Team
+                <br />
+                <input type="text" name="team" ref="team"/>
+                <br />
+                <br />
+                Members
+                <br />
+                <input type="text" name="member1" ref="member1" />
+                <br />
+                <input type="text" name="member2" ref="member2" />
+                <br />
+                <br />
+                <input type="submit" value="Submit" />
+            </form>)
+    }
 }
 
 class AssignSubmission extends React.Component {
@@ -160,17 +171,19 @@ class AssignSubmission extends React.Component {
 
     constructor(props) {
         super(props)
+        this.reject = this.reject.bind(this)
+        this.approve = this.approve.bind(this)
     }
 
-    reject = () => {
+    reject() {
         this.props.reject(this.props.value)
     }
 
-    approve = () => {
+    approve() {
         this.props.approve(this.props.value)
     }
 
-    render = () => {
+    render() {
         let value = this.props.value
         let members = []
         for (let index in value.members) {
@@ -197,10 +210,15 @@ class AssignTeam extends React.Component {
 
     constructor(props) {
         super(props)
-        this.state = { json: [ ], rejected: [] }
+        this.approve = this.approve.bind(this)
+        this.reject = this.reject.bind(this)
+        this.state = {
+            json: [],
+            rejected: [],
+        }
     }
 
-    approve = submission => {
+    approve(submission) {
         this.context
             .post('/api/approve-submission/' + submission.id, {},
             response => {
@@ -210,7 +228,7 @@ class AssignTeam extends React.Component {
             })
     }
 
-    reject = submission => {
+    reject(submission) {
         this.context
             .post('/api/reject-submission/' + submission.id, {},
             response => {
@@ -220,13 +238,13 @@ class AssignTeam extends React.Component {
             })
     }
 
-    componentDidMount = () => {
+    componentDidMount() {
         this.context.get(
             '/api/team-submissions',
             response => this.setState({json: response.data }))
     }
 
-    render = () => {
+    render() {
         let elements = []
         for (let index in this.state.json) {
             let submission = this.state.json[index]
@@ -244,28 +262,33 @@ class AssignTeam extends React.Component {
 class App extends React.Component {
     constructor(props) {
         super(props)
+        this.clearError = this.clearError.bind(this)
+        this.clearToken = this.clearToken.bind(this)
+        this.get = this.get.bind(this)
+        this.post = this.post.bind(this)
+        this.setToken = this.setToken.bind(this)
         this.state = {
             token: null,
             error: null,
         }
     }
 
-    setToken = data => {
+    setToken(data) {
         sessionStorage.setItem("foosToken", data)
         this.setState({token: data})
     }
 
-    clearToken = () => {
+    clearToken() {
         sessionStorage.removeItem("foosToken")
         this.setState({token: null})
     }
 
-    componentDidMount = () => {
+    componentDidMount() {
         let data = sessionStorage.getItem("foosToken")
         this.setState({token: data})
     }
 
-    get = (url, handleSuccess) => {
+    get(url, handleSuccess) {
         let token = this.state.token
         let headers = {}
         if (token) {
@@ -284,7 +307,7 @@ class App extends React.Component {
         })
     }
 
-    post = (url, data, handleSuccess, handleError) => {
+    post(url, data, handleSuccess, handleError) {
         let token = this.state.token
         let headers = {}
         if (token) {
@@ -308,9 +331,11 @@ class App extends React.Component {
         })
     }
 
-    clearError = () => this.setState({error: null})
+    clearError() {
+        this.setState({error: null})
+    }
 
-    render = () => {
+    render() {
         let raw = this.state.token
         let parts = raw ? raw.split('.') : null
         let header = parts ? JSON.parse(window.atob(parts[0])) : null

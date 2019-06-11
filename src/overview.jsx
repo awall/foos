@@ -9,7 +9,7 @@ const PlaySlot = ({team}) => (
     </div>
 )
 
-class Overview extends React.Component {
+export class Overview extends React.Component {
     static contextType = UserContext
 
     constructor(props) {
@@ -17,13 +17,13 @@ class Overview extends React.Component {
         this.state = { json: [ ] }
     }
 
-    componentDidMount = () => {
+    componentDidMount() {
         this.context.get(
             '/api/teams',
             response => this.setState({json: response.data }))
     }
 
-    render = () => {
+    render() {
         let teams = ['???', '???', '???', '???', '???', '???', '???', '???' ]
 
         for (let i = 0; i < teams.length; ++i) {
